@@ -1,0 +1,69 @@
+# RutaSegura · Laboratorio de pruebas de carga y estrés con k6
+#
+# Uso básico:
+#   docker compose up -d api                                  # levanta la API
+#   docker compose run --rm k6 run k6/00-humo.js              # ejecuta una prueba
+#
+# Con monitoreo en Grafana (opcional):
+#   docker compose --profile monitoreo up -d
+#   docker compose run --rm -e K6_OUT=influxdb=http://influxdb:8086/k6 k6 run k6/01-carga.js
+#   Abrir http://localhost:3001 e importar el tablero con ID 2587.
+
+services:
+  api:
+    build: ./api
+    container_name: rutasegura-api
+    ports:
+      - "3000:3000"
+    environment:
+      POOL_SIZE: ${POOL_SIZE:-5}
+      POOL_TIMEOUT_MS: ${POOL_TIMEOUT_MS:-2000}
+      LOGIN_ITERACIONES: ${LOGIN_ITERACIONES:-100000}
+      FUGA_MEMORIA: ${FUGA_MEMORIA:-true}
+      CACHE_ESTADISTICAS: ${CACHE_ESTADISTICAS:-false}
+      TASA_FALLA_EXTERNA: ${TASA_FALLA_EXTERNA:-0.02}
+    # Límites de recursos: hacen que los resultados sean comparables entre equipos
+    # y que la fuga de memoria termine en un reinicio visible (OOM).
+    cpus: 1.0
+    mem_limit: 512m
+    restart: unless-stopped
+
+  k6:
+    image: grafana/k6:1.3.0
+    profiles: ["pruebas"]
+    user: root
+    working_dir: /trabajo
+    volumes:
+      - ./k6:/trabajo/k6:ro
+      - ./resultados:/trabajo/resultados
+    environment:
+      BASE_URL: http://api:3000
+      K6_WEB_DASHBOARD: ${K6_WEB_DASHBOARD:-false}
+      K6_WEB_DASHBOARD_EXPORT: ${K6_WEB_DASHBOARD_EXPORT:-}
+    ports:
+      - "5665:5665" # panel web en vivo de k6 (si K6_WEB_DASHBOARD=true)
+    depends_on:
+      api:
+        condition: service_healthy
+
+  influxdb:
+    image: influxdb:1.8
+    profiles: ["monitoreo"]
+    environment:
+      INFLUXDB_DB: k6
+    ports:
+      - "8086:8086"
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    profiles: ["monitoreo"]
+    ports:
+      - "3001:3000"
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - influxdb

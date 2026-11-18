@@ -1,0 +1,31 @@
+
+═════════════════════════════════════════════════════════════════════════════
+  RutaSegura · Resultado de la prueba: PUNTO-QUIEBRE
+═════════════════════════════════════════════════════════════════════════════
+  Duración total:          392 s
+  VUs máximos:             121
+  Peticiones HTTP:         33442  (85.3 req/s)
+  Iteraciones (+monitor):  7847
+  Tasa de error HTTP:      1.09 %
+  Checks exitosos:         98.90 %
+  Incidentes creados:      1507
+
+  Tiempos de respuesta        p50       p90       p95       p99       máx
+  ─────────────────────────────────────────────────────────────────────────
+  TODOS (viajeros)           96 ms    632 ms   2002 ms   2128 ms   2271 ms
+  flujo (con pausas)        541 ms   2423 ms   3437 ms   4512 ms   6182 ms
+
+  Estado del servidor (muestreado por el monitor)
+  ─────────────────────────────────────────────────────────────────────────
+  Memoria RSS (MB):        último 216  (mín 45, máx 216)
+  Heap usado (MB):         último 96  (mín 6, máx 102)
+  Cola del pool BD:        último 93  (mín 0, máx 93)
+  Timeouts del pool:       último 196  (mín 0, máx 196)
+  Lag event loop p99 (ms): último 43.9  (mín 0, máx 44.2)
+  Entradas en caché:       último 1219  (mín 0, máx 1219)
+
+  Umbrales (SLO)
+  ─────────────────────────────────────────────────────────────────────────
+  ✔ CUMPLE     http_req_failed{scenario:viajeros}  rate<0.05
+  ✘ NO CUMPLE  http_req_duration{scenario:viajeros}  p(95)<2000
+═════════════════════════════════════════════════════════════════════════════

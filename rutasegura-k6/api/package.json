@@ -1,0 +1,13 @@
+{
+  "name": "rutasegura-api",
+  "version": "1.0.0",
+  "description": "API de práctica para pruebas de carga y estrés con k6 (ASCAS12)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "start:optimizada": "POOL_SIZE=20 FUGA_MEMORIA=false CACHE_ESTADISTICAS=true node src/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
